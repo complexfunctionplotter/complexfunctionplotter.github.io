@@ -83,7 +83,6 @@ for (let i = 0; i < positionAttribute.count; i++) {
 	vertex.z = func.re();
 
 	positionAttribute.setXYZ( i, vertex.x, vertex.y, vertex.z );
-
 }
 
 const gridHelper = new THREE.GridHelper(8, 20);
