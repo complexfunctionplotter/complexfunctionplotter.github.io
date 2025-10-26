@@ -79,7 +79,7 @@ const complexOperator = new ComplexOperator();
 for (let i = 0; i < positionAttribute.count; i++) {
 	vertex.fromBufferAttribute( positionAttribute, i );
     const z = new ComplexNumber(vertex.x, vertex.y);
-    const func = z;
+    const func = complexOperator.multiply(z, z);
 	vertex.z = func.re();
 
 	positionAttribute.setXYZ( i, vertex.x, vertex.y, vertex.z );
