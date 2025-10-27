@@ -77,15 +77,15 @@ const vertex = new THREE.Vector3();
 const complexOperator = new ComplexOperator();
 
 for (let i = 0; i < positionAttribute.count; i++) {
-	vertex.fromBufferAttribute( positionAttribute, i );
+	vertex.fromBufferAttribute(positionAttribute, i);
     const z = new ComplexNumber(vertex.x, vertex.y);
-    const func = complexOperator.multiply(z, z);
+    const func = complexOperator.add(complexOperator.multiply(z, z), new ComplexNumber(1, 0));
 	vertex.z = func.re();
 
 	positionAttribute.setXYZ( i, vertex.x, vertex.y, vertex.z );
 }
 
-const gridHelper = new THREE.GridHelper(8, 20);
+const gridHelper = new THREE.GridHelper(8, 8);
 scene.add(gridHelper);
 
 const controls = new OrbitControls(camera, renderer.domElement);
