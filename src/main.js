@@ -1,7 +1,6 @@
 import './style.css'
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { mx_bilerp_0 } from 'three/src/nodes/materialx/lib/mx_noise.js';
 
 class ComplexNumber {
     constructor(a, b) {
@@ -16,8 +15,49 @@ class ComplexNumber {
     im() {
         return this.b;
     }
+
+    mod() {
+        return Math.sqrt(this.re()*this.re()+this.im()*this.im());
+    }
+
+    arg() {
+        return Math.atan2(this.im(), this.re());
+    }
+
+    conjugate() {
+        return new ComplexNumber(x.re(), -x.im());
+    }
+
+    add(y) {
+        return new ComplexNumber(this.re()+y.re(), this.im()+y.im());
+    }
+
+    subtract(y) {
+        return new ComplexNumber(this.re()-y.re(), this.im()-y.im());
+    }
+
+    multiply(y) {
+        return new ComplexNumber(this.re()*y.re()-this.im()*y.im(), this.re()*y.im()+this.im()*y.re());
+    }
+
+    divide(y) {
+        return new ComplexNumber((this.re()*y.re()+this.im()*y.im())/(y.re()*y.re()+y.im()*y.im()), (-this.re()*y.im()+this.im()*y.re())/(y.re()*y.re()+y.im()*y.im()));
+    }
+
+    exp() {
+        const ex = Math.exp(this.re());
+        return new ComplexNumber(ex*Math.cos(this.im()), ex*Math.sin(this.im()));
+    }
+
+    ln() {
+        return new ComplexNumber(Math.log(this.mod()), this.arg());
+    }
+
+    pow(w) {
+        return w.multiply(this.ln()).exp();
+    }
 }
-class ComplexOperator {
+/*class ComplexOperator {
     mod(x) {
         return Math.sqrt(x.re()*x.re()+x.im()*x.im());
     }
@@ -45,8 +85,10 @@ class ComplexOperator {
     divide(x, y) {
         return new ComplexNumber((x.re()*y.re()+x.im()*y.im())/(y.re()*y.re()+y.im()*y.im()), (-x.re()*y.im()+x.im()*y.re())/(y.re()*y.re()+y.im()*y.im()));
     }
-}
+}*/
+
 const gridSize = 8;
+const resolution = 100;
 
 const scene = new THREE.Scene();
 
@@ -60,7 +102,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 camera.position.setZ(10);
 
-const axisGeometry = new THREE.CylinderGeometry(0.02, 0.02, 8, 10, 1, false);
+const axisGeometry = new THREE.CylinderGeometry(0.02, 0.02, gridSize, 10, 1, false);
 const axisMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
 const xAxis = new THREE.Mesh(axisGeometry, axisMaterial);
 const zAxis = new THREE.Mesh(axisGeometry, axisMaterial);
@@ -69,7 +111,7 @@ xAxis.rotateZ(Math.PI/2);
 zAxis.rotateX(Math.PI/2);
 
 
-const planeGeometry = new THREE.PlaneGeometry(gridSize, gridSize, 100, 100);
+const planeGeometry = new THREE.PlaneGeometry(gridSize, gridSize, resolution, resolution);
 const planeMaterial = new THREE.MeshBasicMaterial({vertexColors: true, wireframe: false, side: THREE.DoubleSide});
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 scene.add(plane);
@@ -77,7 +119,7 @@ plane.rotateX(-Math.PI/2)
 
 const positionAttribute = planeGeometry.getAttribute('position');
 const vertex = new THREE.Vector3();
-const complexOperator = new ComplexOperator();
+//const complexOperator = new ComplexOperator();
 
 function getColor(im) {
     const color = new THREE.Color();
@@ -95,7 +137,8 @@ let colorIndex = 0;
 for (let i = 0; i < positionAttribute.count; i++) {
 	vertex.fromBufferAttribute(positionAttribute, i);
     const z = new ComplexNumber(vertex.x, vertex.y);
-    const func = complexOperator.divide(new ComplexNumber(1, 0), z);
+    const func = z.pow(new ComplexNumber(-1, 0));
+    //const func = complexOperator.divide(new ComplexNumber(1, 0), z);
     //const func = complexOperator.add(new ComplexNumber(1, 0), complexOperator.multiply(z, z));
 	vertex.z = func.re();
     const color = getColor(func.im());
