@@ -81,8 +81,8 @@ const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
 });
 
-//renderer.setPixelRatio(window.devicePixelRatio);
-//renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x0f0d0f, 1);
 camera.position.setX(6);
 camera.position.setY(6);
@@ -202,10 +202,15 @@ scene.add(gridHelper);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 
-function animate() {
-    requestAnimationFrame(animate);
+window.addEventListener('resize', (event) => {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
+
+function animate() {
+    requestAnimationFrame(animate);
 
     controls.update();
     renderer.render(scene, camera);
