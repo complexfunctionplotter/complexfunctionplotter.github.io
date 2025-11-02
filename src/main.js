@@ -172,8 +172,6 @@ function load() {
     const colors = [];
     let colorIndex = 0;
     
-    alert(loadedPlanes[planeCounter-1].name);
-    
     for (let i = 0; i < positionAttribute.count; i++) {
 	    vertex.fromBufferAttribute(positionAttribute, i);
         const z = new ComplexNumber(vertex.x, vertex.y);
