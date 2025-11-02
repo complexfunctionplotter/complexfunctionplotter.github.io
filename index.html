@@ -6,8 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Complex Function Plotter</title>
   </head>
-  <body>
-    <canvas id="bg"></canvas>
+  <body style="background-color:#0f0d0f;">
+    <div id="canvas-container">
+      <canvas id="bg"></canvas>
+      <input type="text" id="textbox" placeholder="Insert complex function" autocomplete="off">
+      <button id="btn1">Enter</button>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -56,39 +56,22 @@ class ComplexNumber {
     pow(w) {
         return w.multiply(this.ln()).exp();
     }
+
+    sin() {
+        return this.multiply(new ComplexNumber(0, 1)).exp().subtract(this.multiply(new ComplexNumber(0, -1)).exp()).divide(new ComplexNumber(0, 2));
+    }
+
+    cos() {
+        return this.multiply(new ComplexNumber(0, 1)).exp().add(this.multiply(new ComplexNumber(0, -1)).exp()).divide(new ComplexNumber(2, 0));
+    }
+
+    tan() {
+        return this.sin().divide(this.cos());
+    }
 }
-/*class ComplexOperator {
-    mod(x) {
-        return Math.sqrt(x.re()*x.re()+x.im()*x.im());
-    }
-
-    arg(x) {
-        return Math.atan(x.im()/x.re());
-    }
-
-    conjugate(x) {
-        return new ComplexNumber(x.re(), -x.im());
-    }
-
-    add(x, y) {
-        return new ComplexNumber(x.re()+y.re(), x.im()+y.im());
-    }
-
-    subtract(x, y) {
-        return new ComplexNumber(x.re()-y.re(), x.im()-y.im());
-    }
-
-    multiply(x, y) {
-        return new ComplexNumber(x.re()*y.re()-x.im()*y.im(), x.re()*y.im()+x.im()*y.re());
-    }
-
-    divide(x, y) {
-        return new ComplexNumber((x.re()*y.re()+x.im()*y.im())/(y.re()*y.re()+y.im()*y.im()), (-x.re()*y.im()+x.im()*y.re())/(y.re()*y.re()+y.im()*y.im()));
-    }
-}*/
 
 const gridSize = 8;
-const resolution = 100;
+const resolution = 64;
 
 const scene = new THREE.Scene();
 
@@ -98,9 +81,13 @@ const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
 });
 
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-camera.position.setZ(10);
+//renderer.setPixelRatio(window.devicePixelRatio);
+//renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0f0d0f, 1);
+camera.position.setX(6);
+camera.position.setY(6);
+camera.position.setZ(6);
+
 
 const axisGeometry = new THREE.CylinderGeometry(0.02, 0.02, gridSize, 10, 1, false);
 const axisMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
@@ -111,15 +98,8 @@ xAxis.rotateZ(Math.PI/2);
 zAxis.rotateX(Math.PI/2);
 
 
-const planeGeometry = new THREE.PlaneGeometry(gridSize, gridSize, resolution, resolution);
-const planeMaterial = new THREE.MeshBasicMaterial({vertexColors: true, wireframe: false, side: THREE.DoubleSide});
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-scene.add(plane);
-plane.rotateX(-Math.PI/2)
 
-const positionAttribute = planeGeometry.getAttribute('position');
-const vertex = new THREE.Vector3();
-//const complexOperator = new ComplexOperator();
+
 
 function getColor(im) {
     const color = new THREE.Color();
@@ -131,25 +111,93 @@ function getColor(im) {
     return im <= 0 ? color.set(colorneg) : color.set(colorpos);
 }
 
-const colors = [];
-let colorIndex = 0;
 
-for (let i = 0; i < positionAttribute.count; i++) {
-	vertex.fromBufferAttribute(positionAttribute, i);
-    const z = new ComplexNumber(vertex.x, vertex.y);
-    const func = z.pow(new ComplexNumber(-1, 0));
-    //const func = complexOperator.divide(new ComplexNumber(1, 0), z);
-    //const func = complexOperator.add(new ComplexNumber(1, 0), complexOperator.multiply(z, z));
-	vertex.z = func.re();
-    const color = getColor(func.im());
-    colors[colorIndex++] = color.r;
-    colors[colorIndex++] = color.g;
-    colors[colorIndex++] = color.b;
+const btn1 = document.getElementById('btn1');
+const textbox = document.getElementById('textbox');
 
+const loadedPlanes = [];
+let planeCounter = 0;
 
-	positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
-    planeGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+function removePlane(name) {
+    const removedPlane = scene.getObjectByName(`ComplexPlane${name}`);
+    if(removedPlane) {
+        scene.remove(removedPlane);
+        removedPlane.geometry.dispose();
+    }
 }
+
+function parse(value, z) {
+    let func;
+    if(value=="ln(z)") {
+        func = z.ln();
+    }
+    else if(value=="1/z") {
+        func = z.pow(new ComplexNumber(-1, 0));
+    }
+    else if(value=="e^z") {
+        func = z.exp();
+    }
+    else if(value=="z^2") {
+        func = z.pow(new ComplexNumber(2, 0));
+    }
+    else if(value=="sin(z)") {
+        func = z.sin();
+    }
+    else if(value=="cos(z)") {
+        func = z.cos();
+    }
+    else if(value=="tan(z)") {
+        func = z.tan();
+    }
+    else {
+        func = new ComplexNumber(0, 0);
+    }
+    return func;
+}
+
+function load() {
+    planeCounter++;
+    removePlane(planeCounter-1);
+    const planeGeometry = new THREE.PlaneGeometry(gridSize, gridSize, resolution, resolution);
+    const planeMaterial = new THREE.MeshBasicMaterial({vertexColors: true, wireframe: false, side: THREE.DoubleSide});
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    const name = `ComplexPlane${planeCounter}`;
+    plane.name = name;
+    scene.add(plane);
+    loadedPlanes.push(plane);
+    
+    plane.rotation.x = -Math.PI/2;
+    const positionAttribute = planeGeometry.getAttribute('position');
+    const vertex = new THREE.Vector3();
+    const colors = [];
+    let colorIndex = 0;
+    
+    alert(loadedPlanes[planeCounter-1].name);
+    
+    for (let i = 0; i < positionAttribute.count; i++) {
+	    vertex.fromBufferAttribute(positionAttribute, i);
+        const z = new ComplexNumber(vertex.x, vertex.y);
+        const func = parse(textbox.value, z);
+	    vertex.z = func.re();
+        const color = getColor(func.im());
+        colors[colorIndex++] = color.r;
+        colors[colorIndex++] = color.g;
+        colors[colorIndex++] = color.b;
+
+	    positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        planeGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    }
+    textbox.value = "";
+}
+
+btn1.addEventListener('click', load);
+
+textbox.addEventListener('keyup', (event) => {
+    if(event.key=='Enter') {
+        textbox.blur();
+        btn1.click();
+    }
+});
 
 const gridHelper = new THREE.GridHelper(gridSize, gridSize);
 scene.add(gridHelper);
@@ -158,6 +206,8 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 function animate() {
     requestAnimationFrame(animate);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
     controls.update();
     renderer.render(scene, camera);
