@@ -1,8 +1,9 @@
 import './style.css'
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as math from 'mathjs';
 
-class ComplexNumber {
+/*class ComplexNumber {
     constructor(a, b) {
         this.a = a;
         this.b = b;
@@ -68,7 +69,7 @@ class ComplexNumber {
     tan() {
         return this.sin().divide(this.cos());
     }
-}
+}*/
 
 const gridSize = 8;
 const resolution = 64;
@@ -126,34 +127,15 @@ function removePlane(name) {
     }
 }
 
-function parse(value, z) {
-    let func;
-    if(value=="ln(z)") {
-        func = z.ln();
-    }
-    else if(value=="1/z") {
-        func = z.pow(new ComplexNumber(-1, 0));
-    }
-    else if(value=="e^z") {
-        func = z.exp();
-    }
-    else if(value=="z^2") {
-        func = z.pow(new ComplexNumber(2, 0));
-    }
-    else if(value=="sin(z)") {
-        func = z.sin();
-    }
-    else if(value=="cos(z)") {
-        func = z.cos();
-    }
-    else if(value=="tan(z)") {
-        func = z.tan();
-    }
-    else {
-        func = new ComplexNumber(0, 0);
-    }
-    return func;
-}
+/*function parse(value) {
+    let replaced = value;
+    replaced = replaced.replace(/\s/g, '');
+    replaced = replaced.replace('+', '.add(');
+    replaced = replaced.replace('-', '.subtract(');
+    replaced = replaced.replace('*', '.multiply(');
+    replaced = replaced.replace('/', '.divide(');
+    return replaced;
+}*/
 
 function load() {
     planeCounter++;
@@ -171,13 +153,15 @@ function load() {
     const vertex = new THREE.Vector3();
     const colors = [];
     let colorIndex = 0;
-    
     for (let i = 0; i < positionAttribute.count; i++) {
 	    vertex.fromBufferAttribute(positionAttribute, i);
-        const z = new ComplexNumber(vertex.x, vertex.y);
-        const func = parse(textbox.value, z);
-	    vertex.z = func.re();
-        const color = getColor(func.im());
+        const z = math.complex(vertex.x, vertex.y);
+        const scope = {
+            z: z,
+        };
+        const result = math.evaluate(textbox.value, scope);
+	    vertex.z = math.re(result);
+        const color = getColor(math.im(result));
         colors[colorIndex++] = color.r;
         colors[colorIndex++] = color.g;
         colors[colorIndex++] = color.b;
