@@ -2,17 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!--<link rel="icon" type="image/svg+xml" href="/vite.svg" />-->
+    <!--<link rel="icon" type="image" href="./complex.png" />-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Complex Function Plotter</title>
-    <script type="module" crossorigin src="/assets/index-NRYKQNFa.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-wB6nUg-k.css">
+    <script type="module" crossorigin src="/assets/index-DXCdpPO3.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-0yBMLiim.css">
   </head>
   <body style="background-color:#0f0d0f;">
     <div id="canvas-container">
       <canvas id="bg"></canvas>
-      <input type="text" id="textbox" placeholder="Insert complex function" autocomplete="off">
+      <input type="text" id="function-textbox" placeholder="Insert complex function f(z)" autocomplete="off" autocapitalize="off">
       <button id="btn1">Enter</button>
+      <div id="settings-container">
+        <button id="btn2">Settings</button>
+        <div id="settings-menu">
+          <label>Grid Size:</label>
+          <input type="text" id="gridsize-textbox" value="8" autocomplete="off" autocapitalize="off">
+          <br>
+          <label>Resolution:</label>
+          <input type="text" id="resolution-textbox" value="64" autocomplete="off" autocapitalize="off">
+        </div>
+      </div>
     </div>
   </body>
 </html>
