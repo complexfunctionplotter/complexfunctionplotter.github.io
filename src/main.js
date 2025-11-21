@@ -71,16 +71,28 @@ import * as math from 'mathjs';
     }
 }*/
 
-const gridSize = 8;
-const resolution = 64;
+const btn1 = document.getElementById('btn1');
+const functionText = document.getElementById('function-textbox');
+const gridSizeText = document.getElementById('gridsize-textbox');
+const resolutionText = document.getElementById('resolution-textbox');
+const settings = document.getElementById('settings-menu');
+settings.hidden = true;
+
+let gridSize = 8;
+let resolution = 64;
 
 const scene = new THREE.Scene();
-
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
 });
+
+let gridHelper = new THREE.GridHelper(gridSize, gridSize);
+const gridName = 'GridHelper';
+gridHelper.name = gridName;
+scene.add(gridHelper);
+
+const controls = new OrbitControls(camera, renderer.domElement);
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -90,16 +102,13 @@ camera.position.setY(6);
 camera.position.setZ(6);
 
 
-const axisGeometry = new THREE.CylinderGeometry(0.02, 0.02, gridSize, 10, 1, false);
+let axisGeometry = new THREE.CylinderGeometry(0.02, 0.02, gridSize, 10, 1, false);
 const axisMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-const xAxis = new THREE.Mesh(axisGeometry, axisMaterial);
-const zAxis = new THREE.Mesh(axisGeometry, axisMaterial);
+let xAxis = new THREE.Mesh(axisGeometry, axisMaterial);
+let zAxis = new THREE.Mesh(axisGeometry, axisMaterial);
 scene.add(xAxis, zAxis);
 xAxis.rotateZ(Math.PI/2);
 zAxis.rotateX(Math.PI/2);
-
-
-
 
 
 function getColor(im) {
@@ -113,8 +122,7 @@ function getColor(im) {
 }
 
 
-const btn1 = document.getElementById('btn1');
-const textbox = document.getElementById('textbox');
+
 
 const loadedPlanes = [];
 let planeCounter = 0;
@@ -127,24 +135,14 @@ function removePlane(name) {
     }
 }
 
-/*function parse(value) {
-    let replaced = value;
-    replaced = replaced.replace(/\s/g, '');
-    replaced = replaced.replace('+', '.add(');
-    replaced = replaced.replace('-', '.subtract(');
-    replaced = replaced.replace('*', '.multiply(');
-    replaced = replaced.replace('/', '.divide(');
-    return replaced;
-}*/
-
 function load() {
     planeCounter++;
     removePlane(planeCounter-1);
     const planeGeometry = new THREE.PlaneGeometry(gridSize, gridSize, resolution, resolution);
     const planeMaterial = new THREE.MeshBasicMaterial({vertexColors: true, wireframe: false, side: THREE.DoubleSide});
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    const name = `ComplexPlane${planeCounter}`;
-    plane.name = name;
+    const planeName = `ComplexPlane${planeCounter}`;
+    plane.name = planeName;
     scene.add(plane);
     loadedPlanes.push(plane);
     
@@ -159,7 +157,7 @@ function load() {
         const scope = {
             z: z,
         };
-        const result = math.evaluate(textbox.value, scope);
+        const result = math.evaluate(functionText.value, scope);
 	    vertex.z = math.re(result);
         const color = getColor(math.im(result));
         colors[colorIndex++] = color.r;
@@ -173,18 +171,45 @@ function load() {
 }
 
 btn1.addEventListener('click', load);
-
-textbox.addEventListener('keyup', (event) => {
+functionText.addEventListener('keyup', (event) => {
     if(event.key=='Enter') {
-        textbox.blur();
+        functionText.blur();
         btn1.click();
     }
 });
 
-const gridHelper = new THREE.GridHelper(gridSize, gridSize);
-scene.add(gridHelper);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+gridSizeText.addEventListener('keyup', (event) => {
+    if(event.key=='Enter') {
+        gridSizeText.blur();
+        gridSize = gridSizeText.value;
+        scene.remove(xAxis, zAxis, gridHelper);
+        axisGeometry = new THREE.CylinderGeometry(0.02, 0.02, gridSize, 10, 1, false);
+        xAxis = new THREE.Mesh(axisGeometry, axisMaterial);
+        zAxis = new THREE.Mesh(axisGeometry, axisMaterial);
+        xAxis.rotateZ(Math.PI/2);
+        zAxis.rotateX(Math.PI/2);
+        gridHelper = new THREE.GridHelper(gridSize, gridSize);
+        scene.add(xAxis, zAxis, gridHelper);
+        load();
+    }
+});
+
+resolutionText.addEventListener('keyup', (event) => {
+    if(event.key=='Enter') {
+        resolutionText.blur();
+        resolution = resolutionText.value;
+        load();
+    }
+});
+
+function showSettings(){
+    settings.hidden = !settings.hidden;
+}
+
+btn2.addEventListener('click', showSettings);
+
+
 
 window.addEventListener('resize', (event) => {
     renderer.setPixelRatio(window.devicePixelRatio);
