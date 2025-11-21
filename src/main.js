@@ -76,7 +76,6 @@ const functionText = document.getElementById('function-textbox');
 const gridSizeText = document.getElementById('gridsize-textbox');
 const resolutionText = document.getElementById('resolution-textbox');
 const settings = document.getElementById('settings-menu');
-settings.hidden = true;
 
 let gridSize = 8;
 let resolution = 64;
